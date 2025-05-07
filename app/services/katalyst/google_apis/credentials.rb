@@ -5,7 +5,7 @@ require "googleauth"
 
 module Katalyst
   module GoogleApis
-    class Credentials < Google::Auth::ExternalAccount::AwsCredentials
+    class Credentials < ::Google::Auth::ExternalAccount::AwsCredentials
       def initialize(**)
         super(Config.new(**).to_h)
 
@@ -31,7 +31,12 @@ module Katalyst
       end
 
       def region
-        @region ||= @aws_provider.client.config.region
+        @region ||= case @aws_provider
+                    when ::Aws::SSOCredentials
+                      @aws_provider.client.config.region
+                    else
+                      ENV.fetch("AWS_REGION", nil)
+                    end
       end
 
       class Config
