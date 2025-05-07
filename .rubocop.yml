@@ -1,0 +1,9 @@
+plugins:
+  - rubocop-katalyst
+
+inherit_mode:
+  merge:
+    - Exclude
+
+AllCops:
+  TargetRubyVersion: 3.4

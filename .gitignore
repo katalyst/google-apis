@@ -1,0 +1,9 @@
+/.bundle/
+/coverage/
+/doc/
+/log/*.log
+/pkg/
+/tmp/
+
+# rspec failure tracking
+.rspec_status

@@ -1,0 +1,7 @@
+en:
+  errors:
+    messages:
+      recaptcha_blank: "Please verify that you're not a robot."
+      recaptcha_invalid: "There was a problem verifying your submission. Please try again."
+      recaptcha_action_mismatch: "Something went wrong with the form validation. Please refresh the page and try again."
+      recaptcha_suspicious: "We couldn't verify your submission. Please try again or contact support if the problem persists."
