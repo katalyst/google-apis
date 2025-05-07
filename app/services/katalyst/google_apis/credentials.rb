@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "aws-sdk-core"
+require "googleauth"
 
 module Katalyst
   module GoogleApis

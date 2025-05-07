@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name    = "katalyst-google-apis"
-  spec.version = "1.0.0"
+  spec.version = "1.0.1"
   spec.authors = ["Katalyst Interactive"]
   spec.email   = ["developers@katalyst.com.au"]
 
@@ -16,5 +16,6 @@ Gem::Specification.new do |spec|
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.add_dependency "activesupport"
+  spec.add_dependency "aws-sdk-core"
   spec.add_dependency "googleauth"
 end
