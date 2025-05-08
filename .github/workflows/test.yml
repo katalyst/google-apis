@@ -8,6 +8,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Install dependencies
+        env:
+          DEPENDENCIES: "libcurl4-openssl-dev"
+        run: sudo apt-get install -y $DEPENDENCIES || (sudo apt-get update && sudo apt-get install -y $DEPENDENCIES)
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
         with:
