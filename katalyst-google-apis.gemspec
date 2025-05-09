@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.add_dependency "activesupport"
-  spec.add_dependency "curb"
   spec.add_dependency "aws-sdk-core"
+  spec.add_dependency "curb"
   spec.add_dependency "googleauth"
 end
