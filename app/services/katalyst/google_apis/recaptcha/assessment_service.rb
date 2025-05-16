@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "curb"
+
 module Katalyst
   module GoogleApis
     module Recaptcha
