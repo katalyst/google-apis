@@ -43,7 +43,7 @@ module Katalyst
         include ActiveModel::Model
         include ActiveModel::Attributes
 
-        attribute :scope, :string, default: "https://www.googleapis.com/auth/cloud-platform"
+        attribute :scope, :string
         attribute :service_account_email, :string
         attribute :project_number, :integer
         attribute :identity_pool, :string

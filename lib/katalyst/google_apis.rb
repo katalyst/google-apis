@@ -18,12 +18,14 @@ module Katalyst
       yield(config)
     end
 
-    def credentials
-      @credentials ||= Credentials.new(
+    def credentials(scope: "https://www.googleapis.com/auth/cloud-platform")
+      @credentials        ||= {}
+      @credentials[scope] ||= Credentials.new(
         project_number:        config.project_number,
         service_account_email: config.service_account_email,
         identity_pool:         config.identity_pool,
         identity_provider:     config.identity_provider,
+        scope:,
       )
     end
   end
