@@ -10,25 +10,6 @@ enterprise.ready = (f) => {
   (config["fns"] ||= []).push(f);
 };
 
-/**
- * Inject recaptcha enterprise script into the head, unless it is already there.
- */
-function injectRecaptchaScripts() {
-  if (document.head.querySelector("script[src*='recaptcha/enterprise']")) {
-    return;
-  }
-
-  const script = document.createElement("script");
-  script.setAttribute(
-    "src",
-    "https://www.google.com/recaptcha/enterprise.js?render=explicit",
-  );
-  script.toggleAttribute("async", true);
-  script.toggleAttribute("defer", true);
-
-  document.head.appendChild(script);
-}
-
 export default class RecaptchaController extends Controller {
   static values = {
     siteKey: String,
@@ -121,4 +102,41 @@ export default class RecaptchaController extends Controller {
   get responseTarget() {
     return this.element.nextElementSibling;
   }
+}
+
+function getMetaElement(name) {
+  return document.querySelector(`meta[name="${name}"]`);
+}
+
+function getCspNonce() {
+  const element = getMetaElement("csp-nonce");
+  if (element) {
+    const {nonce: nonce, content: content} = element;
+    return nonce === "" ? content : nonce;
+  }
+}
+
+function createRecaptchaScriptElement() {
+  const element = document.createElement("script");
+  element.src = "https://www.google.com/recaptcha/enterprise.js?render=explicit";
+  const cspNonce = getCspNonce();
+  if (cspNonce) {
+    element.setAttribute("nonce", cspNonce);
+  }
+  element.async = true
+  element.defer = true
+
+  return element;
+}
+
+/**
+ * Inject recaptcha enterprise script into the head, unless it is already there.
+ */
+function injectRecaptchaScripts() {
+  let element = document.head.querySelector("script[src*='recaptcha/enterprise']");
+  if (!element) {
+    element = createRecaptchaScriptElement();
+    document.head.appendChild(element);
+  }
+  return element;
 }
