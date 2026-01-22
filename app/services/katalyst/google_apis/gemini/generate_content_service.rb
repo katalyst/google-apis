@@ -1,24 +1,24 @@
 # frozen_string_literal: true
 
-require "curb"
-
 module Katalyst
   module GoogleApis
-    module Recaptcha
-      class AssessmentService
-        attr_accessor :response, :result, :error
+    module Gemini
+      # Use Gemini GPT to generate a response to a prompt.
+      class GenerateContentService
+        attr_reader :response, :result, :error, :content_text
 
-        def self.call(assessment:, parent:, credentials: GoogleApis.credentials)
-          new(credentials:, parent:).call(assessment:)
+        def self.call(parent:, model:, payload:, credentials: Katalyst::GoogleApis.credentials)
+          new(parent:, model:, credentials:).call(payload:)
         end
 
-        def initialize(credentials:, parent:)
+        def initialize(credentials:, model:, parent:)
           @credentials = credentials
-          @parent      = parent
+          @model = model
+          @parent = parent
         end
 
-        def call(assessment:)
-          @response = Curl.post(url, assessment.to_json) do |http|
+        def call(payload:)
+          @response = Curl.post(url, payload.to_json) do |http|
             http.headers["Content-Type"] = "application/json; UTF-8"
             @credentials.apply!(http.headers)
           end
@@ -33,6 +33,12 @@ module Katalyst
             )
           end
 
+          if result[:error].present?
+            @error = GoogleApis::Error.new(**result[:error])
+          else
+            @content_text = result.dig(:candidates, 0, :content, :parts, 0, :text)
+          end
+
           self
         rescue StandardError => e
           @error = e
@@ -41,20 +47,14 @@ module Katalyst
           report_error
         end
 
-        def valid?
-          @result.present? && @result.dig(:tokenProperties, :valid)
+        def success?
+          result.present? && content_text.present?
         end
 
-        def action
-          return nil unless valid?
+        def content_json
+          return @content_json if instance_variable_defined?(:@content_json)
 
-          @result.dig(:tokenProperties, :action)
-        end
-
-        def score
-          return nil unless valid?
-
-          @result.dig(:riskAnalysis, :score)
+          @content_json = JSON.parse(content_text, symbolize_names: true)
         end
 
         def inspect
@@ -64,7 +64,7 @@ module Katalyst
         private
 
         def url
-          "https://recaptchaenterprise.googleapis.com/v1/#{@parent}/assessments"
+          "https://aiplatform.googleapis.com/v1#{@parent}#{@model}:generateContent"
         end
 
         def report_error
@@ -80,7 +80,7 @@ module Katalyst
         def sentry_breadcrumb(error)
           Sentry::Breadcrumb.new(
             type:     "http",
-            category: "recaptcha",
+            category: "gemini",
             data:     {
               url:,
               method:      "POST",

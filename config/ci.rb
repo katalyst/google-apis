@@ -5,7 +5,7 @@
 CI.run do
   step "Setup", "bin/setup"
 
-  step "Style: Ruby", "bundle exec rubocop"
+  step "Style: Ruby", "bundle exec rubocop --no-server"
 
   step "Style: JS/CSS", "bundle exec rake prettier:lint"
 

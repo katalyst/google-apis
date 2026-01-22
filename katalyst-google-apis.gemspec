@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name    = "katalyst-google-apis"
-  spec.version = "1.1.1"
+  spec.version = "1.2.0"
   spec.authors = ["Katalyst Interactive"]
   spec.email   = ["developers@katalyst.com.au"]
 

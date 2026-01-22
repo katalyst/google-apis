@@ -6,4 +6,8 @@ inherit_mode:
     - Exclude
 
 AllCops:
+  CacheRootDirectory: tmp/rubocop
   TargetRubyVersion: 3.4
+
+RSpec/ExampleLength:
+  Max: 15
