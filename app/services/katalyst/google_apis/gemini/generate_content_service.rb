@@ -23,7 +23,7 @@ module Katalyst
             @credentials.apply!(http.headers)
           end
 
-          if @response.content_type == "application/json"
+          if %r{^application\/json}.match?(@response.content_type)
             @result = JSON.parse(response.body, symbolize_names: true)
           else
             raise GoogleApis::Error.new(
