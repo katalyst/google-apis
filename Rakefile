@@ -2,17 +2,24 @@
 
 require "bundler/setup"
 require "bundler/gem_tasks"
-require "rubocop/rake_task"
+
+require "rspec/core/rake_task"
+RSpec::Core::RakeTask.new(:spec)
 
 require "rubocop/katalyst/rake_task"
 RuboCop::Katalyst::RakeTask.new
 
-desc "Run all linters"
-task lint: %w[rubocop]
+require "rubocop/katalyst/prettier_task"
+RuboCop::Katalyst::PrettierTask.new
 
-desc "Run all auto-formatters"
-task format: %w[rubocop:autocorrect]
+desc "Run security checks"
+task security: :environment do
+  sh "bundle exec brakeman -q -w2"
+end
 
-task default: %i[lint] do
+desc "Dummy rails environment for katalyst-rubocop"
+task :environment
+
+task default: %i[lint spec security] do
   puts "🎉 build complete! 🎉"
 end

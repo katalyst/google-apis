@@ -111,20 +111,21 @@ function getMetaElement(name) {
 function getCspNonce() {
   const element = getMetaElement("csp-nonce");
   if (element) {
-    const {nonce: nonce, content: content} = element;
+    const { nonce: nonce, content: content } = element;
     return nonce === "" ? content : nonce;
   }
 }
 
 function createRecaptchaScriptElement() {
   const element = document.createElement("script");
-  element.src = "https://www.google.com/recaptcha/enterprise.js?render=explicit";
+  element.src =
+    "https://www.google.com/recaptcha/enterprise.js?render=explicit";
   const cspNonce = getCspNonce();
   if (cspNonce) {
     element.setAttribute("nonce", cspNonce);
   }
-  element.async = true
-  element.defer = true
+  element.async = true;
+  element.defer = true;
 
   return element;
 }
@@ -133,7 +134,9 @@ function createRecaptchaScriptElement() {
  * Inject recaptcha enterprise script into the head, unless it is already there.
  */
 function injectRecaptchaScripts() {
-  let element = document.head.querySelector("script[src*='recaptcha/enterprise']");
+  let element = document.head.querySelector(
+    "script[src*='recaptcha/enterprise']",
+  );
   if (!element) {
     element = createRecaptchaScriptElement();
     document.head.appendChild(element);
