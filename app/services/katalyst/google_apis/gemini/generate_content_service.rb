@@ -45,22 +45,9 @@ module Katalyst
           end
 
           self
-        rescue GoogleApis::Error => e
-          @error = e
-          if e.code == 429 && @attempt < @retries
-            Kernel.sleep(backoff)
-
-            @response = nil
-            @result = nil
-            @error = nil
-            @attempt += 1
-            retry
-          else
-            raise e
-          end
         rescue StandardError => e
           @error = e
-          raise e
+          retry?(e) ? retry : raise
         ensure
           report_error
         end
@@ -106,6 +93,20 @@ module Katalyst
               reason:      error.message,
             },
           )
+        end
+
+        def retry?(error)
+          if error.is_a?(GoogleApis::Error) && error.code == 429 && @attempt < @retries
+            Kernel.sleep(backoff)
+
+            @response = nil
+            @result = nil
+            @error = nil
+            @attempt += 1
+            true
+          else
+            false
+          end
         end
 
         def backoff
