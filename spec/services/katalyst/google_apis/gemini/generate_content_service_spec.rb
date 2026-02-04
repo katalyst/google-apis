@@ -16,15 +16,24 @@ RSpec.describe Katalyst::GoogleApis::Gemini::GenerateContentService do
   let(:payload) { { contents: [{ role: "user", parts: [{ text: "What is AI?" }] }] } }
   let(:response) { { candidates: [{ content: { parts: [{ text: content_json.to_json }] } }] } }
   let(:content_json) { { key: "value" } }
+  let(:rate_limit_error) do
+    {
+      error: {
+        code:    429,
+        message: "Too Many Requests",
+        status:  "RESOURCE_EXHAUSTED",
+      },
+    }
+  end
 
   before do
     allow(credentials).to receive(:apply!)
   end
 
-  def stub_api_request(status: 200, content_type: "application/json", response: self.response)
+  def stub_api_request(status: 200, content_type: "application/json", response: self.response, headers: {})
     stub_request(:post, /aiplatform.googleapis.com/).to_return(
       status:,
-      headers: { "Content-Type" => content_type },
+      headers: { "Content-Type" => content_type }.merge(headers),
       body:    response.is_a?(String) ? response : response.to_json,
     )
   end
@@ -56,7 +65,54 @@ RSpec.describe Katalyst::GoogleApis::Gemini::GenerateContentService do
 
     stub_api_request(status: 400, response:)
 
-    expect(action).to have_attributes(success?: false, error: have_attributes(**response[:error]))
+    expect { action }.to raise_error(having_attributes(code: 400, message: /Cannot find field/))
+  end
+
+  it "retries on 429 responses and succeeds" do
+    allow(Kernel).to receive(:sleep)
+
+    stub_request(:post, /aiplatform.googleapis.com/).to_return(
+      { status: 429, headers: { "Content-Type" => "application/json" }, body: rate_limit_error.to_json },
+      { status: 429, headers: { "Content-Type" => "application/json" }, body: rate_limit_error.to_json },
+      { status: 200, headers: { "Content-Type" => "application/json" }, body: response.to_json },
+    )
+
+    aggregate_failures "succeeds on the third attempt" do
+      expect(action).to have_attributes(success?: true, content_json:)
+      expect(a_request(:post, /aiplatform.googleapis.com/)).to have_been_made.times(3)
+      expect(Kernel).to have_received(:sleep).at_least(:once)
+    end
+  end
+
+  it "raises after too many 429 responses" do
+    allow(Kernel).to receive(:sleep)
+
+    stub_request(:post, /aiplatform.googleapis.com/).to_return(
+      *Array.new(6) do
+        { status: 429, headers: { "Content-Type" => "application/json" }, body: rate_limit_error.to_json }
+      end,
+    )
+
+    aggregate_failures "attempts 6 times then fails" do
+      expect { action }.to raise_error(having_attributes(code: 429))
+      expect(Kernel).to have_received(:sleep).at_least(:once)
+      expect(a_request(:post, /aiplatform.googleapis.com/)).to have_been_made.times(6)
+    end
+  end
+
+  it "honors Retry-After when rate limited" do
+    allow(Kernel).to receive(:sleep)
+
+    stub_request(:post, /aiplatform.googleapis.com/).to_return(
+      { status: 429, headers: { "Content-Type" => "application/json", "Retry-After" => "60" },
+        body: rate_limit_error.to_json },
+      { status: 200, headers: { "Content-Type" => "application/json" }, body: response.to_json },
+    )
+
+    aggregate_failures "succeeds after waiting the requested time" do
+      expect(action).to have_attributes(success?: true, content_json:)
+      expect(Kernel).to have_received(:sleep).with(satisfy { |i| i.send(:/, 1000).floor == 60.seconds })
+    end
   end
 
   it "throws authentication errors" do
@@ -65,6 +121,15 @@ RSpec.describe Katalyst::GoogleApis::Gemini::GenerateContentService do
     allow(credentials).to receive(:apply!).and_raise(error)
 
     expect { action }.to raise_error(error)
+  end
+
+  it "does not retry on non-429 responses" do
+    stub_api_request(status: 500, content_type: "text/plain", response: "")
+
+    aggregate_failures "fails and raises error" do
+      expect { action }.to raise_error(having_attributes(code: 500, message: /Unexpected/))
+      expect(a_request(:post, /aiplatform.googleapis.com/)).to have_been_made.once
+    end
   end
 
   it "raises unexpected network errors" do

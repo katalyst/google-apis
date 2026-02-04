@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    katalyst-google-apis (1.2.2)
+    katalyst-google-apis (1.2.3)
       activesupport
       aws-sdk-core
       curb

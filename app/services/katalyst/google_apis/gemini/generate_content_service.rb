@@ -7,14 +7,19 @@ module Katalyst
       class GenerateContentService
         attr_reader :response, :result, :error, :content_text
 
-        def self.call(parent:, model:, payload:, credentials: Katalyst::GoogleApis.credentials)
-          new(parent:, model:, credentials:).call(payload:)
+        def self.call(parent:, model:, payload:, credentials: Katalyst::GoogleApis.credentials,
+                      retries: 5,
+                      jitter: 1_000)
+          new(parent:, model:, credentials:, attempt: 0, retries:, jitter:).call(payload:)
         end
 
-        def initialize(credentials:, model:, parent:)
+        def initialize(credentials:, model:, parent:, attempt:, retries:, jitter:)
           @credentials = credentials
           @model = model
           @parent = parent
+          @attempt = attempt
+          @retries = retries
+          @jitter = jitter
         end
 
         def call(payload:)
@@ -34,12 +39,25 @@ module Katalyst
           end
 
           if result[:error].present?
-            @error = GoogleApis::Error.new(**result[:error])
+            raise GoogleApis::Error.new(**result[:error])
           else
             @content_text = result.dig(:candidates, 0, :content, :parts, 0, :text)
           end
 
           self
+        rescue GoogleApis::Error => e
+          @error = e
+          if e.code == 429 && @attempt < @retries
+            Kernel.sleep(backoff)
+
+            @response = nil
+            @result = nil
+            @error = nil
+            @attempt += 1
+            retry
+          else
+            raise e
+          end
         rescue StandardError => e
           @error = e
           raise e
@@ -88,6 +106,21 @@ module Katalyst
               reason:      error.message,
             },
           )
+        end
+
+        def backoff
+          [@jitter, response_headers.fetch(:retry_after, 0).to_i * 1000].max + (@jitter * rand)
+        end
+
+        def response_headers
+          headers = {}
+          @response.header_str.each_line do |line|
+            key, value = line.split(":", 2)
+            next unless value
+
+            headers[key.underscore.to_sym] = value.strip
+          end
+          headers
         end
       end
     end
