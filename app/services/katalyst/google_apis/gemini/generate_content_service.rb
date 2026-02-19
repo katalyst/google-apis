@@ -7,7 +7,8 @@ module Katalyst
       class GenerateContentService
         attr_reader :response, :result, :error, :content_text
 
-        def self.call(parent:, model:, payload:, credentials: Katalyst::GoogleApis.credentials,
+        def self.call(parent:, model:, payload:,
+                      credentials: Katalyst::GoogleApis.credentials,
                       retries: 5,
                       jitter: 1_000)
           new(parent:, model:, credentials:, attempt: 0, retries:, jitter:).call(payload:)
@@ -89,7 +90,7 @@ module Katalyst
             data:     {
               url:,
               method:      "POST",
-              status_code: error.code,
+              status_code: error.try(:code),
               reason:      error.message,
             },
           )

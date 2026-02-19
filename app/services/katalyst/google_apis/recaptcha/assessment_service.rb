@@ -14,7 +14,7 @@ module Katalyst
 
         def initialize(credentials:, parent:)
           @credentials = credentials
-          @parent      = parent
+          @parent = parent
         end
 
         def call(assessment:)
@@ -84,7 +84,7 @@ module Katalyst
             data:     {
               url:,
               method:      "POST",
-              status_code: error.code,
+              status_code: error.try(:code),
               reason:      error.message,
             },
           )
