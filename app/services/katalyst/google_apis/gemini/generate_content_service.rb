@@ -16,11 +16,11 @@ module Katalyst
 
         def initialize(credentials:, model:, parent:, attempt:, retries:, jitter:)
           @credentials = credentials
-          @model = model
-          @parent = parent
-          @attempt = attempt
-          @retries = retries
-          @jitter = jitter
+          @model       = model
+          @parent      = parent
+          @attempt     = attempt
+          @retries     = retries
+          @jitter      = jitter
         end
 
         def call(payload:)
@@ -101,8 +101,8 @@ module Katalyst
             Kernel.sleep(backoff)
 
             @response = nil
-            @result = nil
-            @error = nil
+            @result   = nil
+            @error    = nil
             @attempt += 1
             true
           else

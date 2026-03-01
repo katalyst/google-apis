@@ -74,7 +74,7 @@ module Katalyst
           location = first_location&.dig(:location)
           return if location.blank?
 
-          latitude = location[:latitude]
+          latitude  = location[:latitude]
           longitude = location[:longitude]
           return if latitude.nil? || longitude.nil?
 

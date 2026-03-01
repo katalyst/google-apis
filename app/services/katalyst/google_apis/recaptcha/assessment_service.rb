@@ -14,7 +14,7 @@ module Katalyst
 
         def initialize(credentials:, parent:)
           @credentials = credentials
-          @parent = parent
+          @parent      = parent
         end
 
         def call(assessment:)

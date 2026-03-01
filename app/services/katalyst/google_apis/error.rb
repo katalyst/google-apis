@@ -8,8 +8,8 @@ module Katalyst
       def initialize(code:, status:, message:, details: nil)
         super(message)
 
-        @code = code
-        @status = status
+        @code    = code
+        @status  = status
         @details = details
       end
 

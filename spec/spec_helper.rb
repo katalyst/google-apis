@@ -13,11 +13,11 @@ require "rails/application"
 
 module DummyApp
   class Application < Rails::Application
-    config.root = Pathname.new(__dir__).join("..")
-    config.eager_load = false
+    config.root            = Pathname.new(__dir__).join("..")
+    config.eager_load      = false
     config.secret_key_base = "test"
-    config.logger = Logger.new(nil)
-    config.hosts = []
+    config.logger          = Logger.new(nil)
+    config.hosts           = []
   end
 end
 

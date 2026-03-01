@@ -23,7 +23,7 @@ module Katalyst
 
         def call(address:, bounds:)
           @address = address
-          @bounds = bounds
+          @bounds  = bounds
 
           @response = Curl.get(url, **params) do |http|
             http.headers["Content-Type"] = "application/json; UTF-8"
@@ -75,7 +75,7 @@ module Katalyst
           location = first_location&.dig(:location)
           return if location.blank?
 
-          latitude = location[:latitude]
+          latitude  = location[:latitude]
           longitude = location[:longitude]
           return if latitude.nil? || longitude.nil?
 
@@ -95,7 +95,7 @@ module Katalyst
         def params
           low, high = @bounds.split("|")
 
-          low_lat, low_lng = low.split(",")
+          low_lat, low_lng   = low.split(",")
           high_lat, high_lng = high.split(",")
 
           {
