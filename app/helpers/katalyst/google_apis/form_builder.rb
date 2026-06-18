@@ -3,6 +3,8 @@
 module Katalyst
   module GoogleApis
     module FormBuilder
+      delegate :tag, :safe_join, to: :@template
+
       def recaptcha_field(attribute = :recaptcha_token, action: object_name,
                           site_key: GoogleApis.config.recaptcha.site_key)
         safe_join([
