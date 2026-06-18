@@ -23,6 +23,10 @@ end
 
 require "katalyst/google_apis"
 
+# GOVUK acronym must be inflected before initialize! so Zeitwerk maps
+# govuk_form_builder.rb → GOVUKFormBuilder instead of GovukFormBuilder.
+ActiveSupport::Inflector.inflections(:en) { |i| i.acronym "GOVUK" }
+
 DummyApp::Application.initialize!
 
 RSpec.configure do |config|

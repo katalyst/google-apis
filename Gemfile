@@ -8,6 +8,7 @@ gem "actionview"
 gem "activemodel"
 gem "activesupport"
 gem "brakeman", require: false
+gem "katalyst-govuk-formbuilder"
 gem "railties"
 gem "rake"
 gem "rspec"

@@ -2,28 +2,33 @@
 
 module Katalyst
   module GoogleApis
+    # rubocop:disable Rails/HelperInstanceVariable
     module FormBuilder
-      def recaptcha_field(attribute = :recaptcha_token, action: object_name,
-                          site_key: GoogleApis.config.recaptcha.site_key)
-        safe_join([
-                    RecaptchaField.new(action:, attribute:, site_key:).render(self),
-                    hidden_field(attribute),
-                  ])
+      ##
+      # :method: recaptcha_field
+      #
+      # :call-seq: recaptcha_field(method = :recaptcha_token, options = {})
+      #
+      #   <%= form_with model: @contact do |f| %>
+      #     <%= f.recaptcha_field %>
+      #   <% end %>
+      #
+      # Please refer to the documentation of the base helper for details.
+      def recaptcha_field(attribute = :recaptcha_token, site_key: GoogleApis.config.recaptcha.site_key, **)
+        RecaptchaField.new(@object_name, attribute, site_key:, **).render(@template)
       end
 
       class RecaptchaField
-        attr_reader :action, :attribute, :site_key
-
-        def initialize(action:, attribute:, site_key:)
-          # rubocop:disable Rails/HelperInstanceVariable
-          @action    = action
-          @attribute = attribute
-          @site_key  = site_key
-          # rubocop:enable Rails/HelperInstanceVariable
+        def initialize(object_name, attribute, site_key:, **html_attributes)
+          @object_name     = object_name
+          @attribute       = attribute
+          @site_key        = site_key
+          @html_attributes = html_attributes
         end
 
         def render(template)
-          template.tag.div(data:)
+          template.safe_join([template.tag.div(**@html_attributes, data:),
+                              template.hidden_field(@object_name, @attribute)])
         end
 
         private
@@ -32,11 +37,12 @@ module Katalyst
           {
             controller:               "recaptcha",
             action:                   "turbo:before-morph-element->recaptcha#morph",
-            recaptcha_action_value:   action,
-            recaptcha_site_key_value: site_key,
+            recaptcha_action_value:   @object_name,
+            recaptcha_site_key_value: @site_key,
           }
         end
       end
     end
+    # rubocop:enable Rails/HelperInstanceVariable
   end
 end
