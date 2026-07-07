@@ -47,6 +47,8 @@ RSpec.describe Katalyst::GoogleApis::GOVUKFormBuilder do
       "data-recaptcha-site-key-value" => "test-site-key",
       "token_name"                    => "quotation[recaptcha_token]",
     )
+    expect(recaptcha["id"]).to eq("quotation-recaptcha-token-field")
+    expect(recaptcha["class"]).to eq("govuk-recaptcha")
   end
 
   context "with errors" do
@@ -60,7 +62,9 @@ RSpec.describe Katalyst::GoogleApis::GOVUKFormBuilder do
 
       expect(form_group["class"]).to include("govuk-form-group--error")
       expect(error_message).to be_present
+      expect(recaptcha["id"]).to eq("quotation-recaptcha-token-field")
       expect(recaptcha["class"]).to include("govuk-recaptcha--error")
+      expect(recaptcha["aria-describedby"]).to eq("quotation-recaptcha-token-error")
     end
   end
 end
