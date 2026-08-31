@@ -2,7 +2,7 @@
 
 module Katalyst
   module GoogleApis
-    # rubocop:disable Rails/HelperInstanceVariable
+    # rubocop:disable-next Rails/HelperInstanceVariable
     module FormBuilder
       ##
       # :method: recaptcha_field
@@ -43,6 +43,5 @@ module Katalyst
         end
       end
     end
-    # rubocop:enable Rails/HelperInstanceVariable
   end
 end
